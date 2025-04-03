@@ -168,7 +168,6 @@ namespace GameOfLife.UI
         /// </summary>
         private void InitializeToolPanel()
         {
-            // Создаем панель инструментов с более заметным фоном
             _toolPanel = new Panel
             {
                 Location = new Point(10, 40),
@@ -177,14 +176,12 @@ namespace GameOfLife.UI
                 BorderStyle = BorderStyle.FixedSingle
             };
             
-            // Создаем подсказки для инструментов
             var toolTip = new ToolTip();
             toolTip.AutoPopDelay = 5000;
             toolTip.InitialDelay = 500;
             toolTip.ReshowDelay = 500;
             toolTip.ShowAlways = true;
             
-            // Создаем кнопки инструментов с иконками и подсказками
             _brushButton = CreateToolButton("B", 10, DrawingTool.Brush);
             _brushButton.Click += (s, e) => { 
                 _currentTool = DrawingTool.Brush; 
@@ -199,15 +196,12 @@ namespace GameOfLife.UI
             };
             toolTip.SetToolTip(_eraserButton, "Ластик (E) - стирает живые клетки");
             
-            // Добавляем кнопки на панель
             _toolPanel.Controls.Add(_brushButton);
             _toolPanel.Controls.Add(_eraserButton);
             
-            // Добавляем панель на форму и перемещаем на передний план
             this.Controls.Add(_toolPanel);
             _toolPanel.BringToFront();
             
-            // Устанавливаем начальное выделение инструмента
             UpdateToolButtonSelection();
         }
 

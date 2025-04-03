@@ -46,24 +46,17 @@ namespace GameOfLife.Services
         private const int MAX_HISTORY_SIZE = 100;
         private bool _canGoBack;
 
-        // Свойства
         public int Width => _width;
         public int Height => _height;
 
-        // Событие для уведомления о стабильности
         public event EventHandler StableStateReached;
 
-        /// <summary>
-        /// Инициализирует новый экземпляр движка игры
-        /// </summary>
         public GameEngine()
         {
-            // Инициализация компонентов
             _ruleParser = new RuleParser("B3/S23");
             _neighborhood = new MooreNeighborhood();
             _history = new Stack<GameStateData>();
             
-            // Инициализация таймера
             _timer = new System.Windows.Forms.Timer
             {
                 Interval = 100,
@@ -71,13 +64,11 @@ namespace GameOfLife.Services
             };
             _timer.Tick += (s, e) => Update();
             
-            // Инициализация поля
             _width = 50;
             _height = 50;
             _cells = new Cell[_width, _height];
             _previousCells = new Cell[_width, _height];
             
-            // Создаем клетки
             for (int x = 0; x < _width; x++)
             {
                 for (int y = 0; y < _height; y++)
@@ -95,11 +86,9 @@ namespace GameOfLife.Services
         /// </summary>
         public void Initialize(int width, int height)
         {
-            // Изменяем размеры поля
             _width = width;
             _height = height;
             
-            // Сбрасываем состояние
             for (int x = 0; x < _width; x++)
             {
                 for (int y = 0; y < _height; y++)
@@ -251,11 +240,9 @@ namespace GameOfLife.Services
         {
             if (IsInBounds(x, y))
             {
-                // Прямое изменение состояния в основной сетке _cells
                 _cells[x, y] = new Cell(isAlive, x, y);
                 
                 // TODO: Возможно, стоит добавить сохранение состояния в историю здесь?
-                // SaveCurrentState(); // Или сделать это опциональным/внешним?
             }
         }
 
@@ -289,7 +276,6 @@ namespace GameOfLife.Services
             {
                 GameStateData previousState = _history.Pop();
                 
-                // Быстрая замена текущего состояния
                 for (int x = 0; x < _width; x++)
                 {
                     for (int y = 0; y < _height; y++)
@@ -311,10 +297,7 @@ namespace GameOfLife.Services
         /// </summary>
         public void GoToNextGeneration()
         {
-            // Сохраняем текущее состояние
             SaveCurrentState();
-            
-            // Используем оптимизированный метод обновления сетки
             UpdateGrid();
         }
 
@@ -323,7 +306,7 @@ namespace GameOfLife.Services
         /// </summary>
         private void UpdateGrid()
         {
-            bool isStable = true; // Флаг для отслеживания стабильности
+            bool isStable = true;
 
             for (int x = 0; x < _width; x++)
             {
@@ -331,13 +314,11 @@ namespace GameOfLife.Services
                 {
                     if (x < _cells.GetLength(0) && y < _cells.GetLength(1))
                     {
-                        // Копируем текущее состояние в предыдущее
                         _previousCells[x, y] = new Cell(_cells[x, y].IsAlive, x, y);
                     }
                 }
             }
             
-            // Создаем временную сетку
             var temporaryGrid = new Grid(_width, _height);
             for (int x = 0; x < _width; x++)
             {
@@ -350,24 +331,20 @@ namespace GameOfLife.Services
                 }
             }
             
-            // Вычисляем новое состояние
             for (int x = 0; x < _width; x++)
             {
                 for (int y = 0; y < _height; y++)
                 {
                     if (x < _cells.GetLength(0) && y < _cells.GetLength(1))
                     {
-                        // Получаем список соседей для текущей клетки
                         var neighbors = _neighborhood.GetNeighbors(temporaryGrid, x, y);
                         
-                        // Подсчитываем количество живых соседей
                         int aliveNeighbors = 0;
                         foreach (var cell in neighbors)
                         {
                             if (cell.IsAlive) aliveNeighbors++;
                         }
                         
-                        // Применяем правила
                         bool isCurrentlyAlive = _previousCells[x, y].IsAlive;
                         bool willBeAlive;
                         
@@ -380,28 +357,23 @@ namespace GameOfLife.Services
                             willBeAlive = _ruleParser.BirthRule(aliveNeighbors);
                         }
                         
-                        // Устанавливаем новое состояние
                         _cells[x, y] = new Cell(willBeAlive, x, y);
                         
-                        // Проверяем, изменилось ли состояние клетки
                         if (isCurrentlyAlive != willBeAlive)
                         {
-                            isStable = false; // Если хоть одна клетка изменилась, поле не стабильно
+                            isStable = false;
                         }
                     }
                 }
             }
             
-            // Увеличиваем счетчик поколений только если поле не стабильно
             if (!isStable)
             {
                 _currentGeneration++;
             }
             else
             {
-                // Поле стабильно, останавливаем симуляцию
                 Stop();
-                // Вызываем событие
                 OnStableStateReached();
             }
         }
@@ -478,7 +450,6 @@ namespace GameOfLife.Services
         /// </summary>
         public ICell[,] GetGrid()
         {
-            // Создаем временный массив для интерфейса ICell
             ICell[,] result = new ICell[_width, _height];
             
             for (int x = 0; x < _width; x++)
@@ -547,12 +518,10 @@ namespace GameOfLife.Services
         /// </summary>
         private void SaveCurrentState()
         {
-            // Ограничиваем размер истории
             if (_history.Count >= MAX_HISTORY_SIZE)
             {
                 Stack<GameStateData> tempStack = new Stack<GameStateData>();
                 
-                // Оставляем только половину истории
                 int toKeep = MAX_HISTORY_SIZE / 2;
                 for (int i = 0; i < toKeep && _history.Count > 0; i++)
                 {
@@ -567,7 +536,6 @@ namespace GameOfLife.Services
                 }
             }
             
-            // Сохраняем текущее состояние
             bool[,] cellStates = new bool[_width, _height];
             for (int x = 0; x < _width; x++)
             {
